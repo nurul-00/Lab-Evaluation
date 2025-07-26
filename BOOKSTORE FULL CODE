@@ -1,0 +1,295 @@
+import java.util.ArrayList;
+abstract class Book {
+    private String title;
+    private String author;
+    private double price;
+    private String ISBN;
+
+    public Book(String title, String author, double price, String ISBN) {
+        this.title = title;
+        this.author = author;
+        this.price = price;
+        this.ISBN = ISBN;
+    }
+
+
+    public abstract double calculateFinalPrice();
+
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public String getISBN() {
+        return ISBN;
+    }
+
+    public void setISBN(String ISBN) {
+        this.ISBN = ISBN;
+    }
+
+    public void displayBookDetails() {
+        System.out.println("Title: " + title);
+        System.out.println("Author: " + author);
+        System.out.println("ISBN: " + ISBN);
+        System.out.println("Base Price: $" + String.format("%.2f", price));
+    }
+}
+
+
+class PrintedBook extends Book {
+    private double shippingWeight; // in kg
+
+    public PrintedBook(String title, String author, double price, String ISBN, double shippingWeight) {
+        super(title, author, price, ISBN);
+        this.shippingWeight = shippingWeight;
+    }
+
+    @Override
+    public double calculateFinalPrice() {
+        double finalPrice = getPrice();
+        if (shippingWeight > 1.0) {
+            finalPrice += 5.0;
+        }
+        return finalPrice;
+    }
+
+    public double getShippingWeight() {
+        return shippingWeight;
+    }
+
+    public void setShippingWeight(double shippingWeight) {
+        this.shippingWeight = shippingWeight;
+    }
+
+    @Override
+    public void displayBookDetails() {
+        super.displayBookDetails();
+        System.out.println("Type: Printed Book");
+        System.out.println("Shipping Weight: " + shippingWeight + " kg");
+        System.out.println("Final Price (with shipping): $" + String.format("%.2f", calculateFinalPrice()));
+    }
+}
+
+
+class EBook extends Book {
+    private double fileSizeMB;
+
+    public EBook(String title, String author, double price, String ISBN, double fileSizeMB) {
+        super(title, author, price, ISBN);
+        this.fileSizeMB = fileSizeMB;
+    }
+
+    @Override
+    public double calculateFinalPrice() {
+        double finalPrice = getPrice();
+        if (fileSizeMB > 100.0) {
+            finalPrice *= 0.90;
+        }
+        return finalPrice;
+    }
+
+    public double getFileSizeMB() {
+        return fileSizeMB;
+    }
+
+    public void setFileSizeMB(double fileSizeMB) {
+        this.fileSizeMB = fileSizeMB;
+    }
+
+    @Override
+    public void displayBookDetails() {
+        super.displayBookDetails();
+        System.out.println("Type: E-Book");
+        System.out.println("File Size: " + fileSizeMB + " MB");
+        System.out.println("Final Price (with discount): $" + String.format("%.2f", calculateFinalPrice()));
+    }
+}
+
+
+class Customer {
+    private String name;
+    private String email;
+    private String membershipLevel; // "Regular", "Silver", "Gold"
+    private ArrayList<Book> cart; // Encapsulated list
+
+    public Customer(String name, String email, String membershipLevel) {
+        this.name = name;
+        this.email = email;
+        this.membershipLevel = membershipLevel;
+        this.cart = new ArrayList<>();
+    }
+
+    public void addToCart(Book book) {
+        this.cart.add(book);
+        System.out.println(book.getTitle() + " added to " + name + "'s cart.");
+    }
+
+    public double calculateCartTotal() {
+        double total = 0.0;
+        for (Book book : cart) {
+            total += book.calculateFinalPrice();
+        }
+
+        switch (membershipLevel) {
+            case "Silver":
+                total *= 0.95;
+                break;
+            case "Gold":
+                total *= 0.90;
+                break;
+            case"Regular":
+            default:
+
+                break;
+        }
+        return total;
+    }
+
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getMembershipLevel() {
+        return membershipLevel;
+    }
+
+    public void setMembershipLevel(String membershipLevel) {
+        this.membershipLevel = membershipLevel;
+    }
+
+    public ArrayList<Book> getCart() {
+        return cart;
+    }
+}
+
+
+class Order {
+    private Customer customer;
+    private ArrayList<Book> books;
+    private String orderStatus;
+
+    public Order(Customer customer, ArrayList<Book> books) {
+        this.customer = customer;
+
+        this.books = new ArrayList<>(books);
+        this.orderStatus = "Processing";
+    }
+
+    public void placeOrder() {
+
+        System.out.println("Customer: " + customer.getName() + " (" + customer.getEmail() + ")");
+        System.out.println("Membership Level: " + customer.getMembershipLevel());
+        System.out.println("Books in Order:");
+        for (Book book : books) {
+            System.out.println("  - " + book.getTitle() + " ($" + String.format("%.2f", book.calculateFinalPrice()) + ")");
+        }
+        System.out.println("Order Total (after membership discount): $" + String.format("%.2f", customer.calculateCartTotal()));
+        System.out.println("Order Status: " + orderStatus);
+
+    }
+
+    public void updateStatus(String newStatus) {
+        this.orderStatus = newStatus;
+        System.out.println("Order status updated to: " + newStatus);
+    }
+
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public ArrayList<Book> getBooks() {
+        return books;
+    }
+
+    public String getOrderStatus() {
+        return orderStatus;
+    }
+}
+
+
+public class Bookstore {
+    public static void main(String[] args) {
+
+        PrintedBook printedBook1 = new PrintedBook("The Great Adventure", "Jane Doe", 25.50, "978-1234567890", 1.2);
+        PrintedBook printedBook2 = new PrintedBook("Mystery of the Old House", "John Smith", 18.00, "978-0987654321", 0.8);
+        EBook eBook1 = new EBook("Digital Dreams", "Alice Brown", 12.99, "978-5555555555", 120.0);
+        EBook eBook2 = new EBook("Coding Fundamentals", "Bob White", 30.00, "978-1111111111", 75.0);
+
+
+
+        printedBook1.displayBookDetails();
+        System.out.println();
+        printedBook2.displayBookDetails();
+        System.out.println();
+        eBook1.displayBookDetails();
+        System.out.println();
+        eBook2.displayBookDetails();
+
+
+        Customer regularCustomer = new Customer("Mike Ross", "mike@example.com", "Regular");
+        Customer silverCustomer = new Customer("Harvey Specter", "harvey@example.com", "Silver");
+        Customer goldCustomer = new Customer("Donna Paulsen", "donna@example.com", "Gold");
+
+
+        regularCustomer.addToCart(printedBook1);
+        regularCustomer.addToCart(eBook2);
+        System.out.println("Mike's Cart Total: $" + String.format("%.2f", regularCustomer.calculateCartTotal()));
+        Order orderMike = new Order(regularCustomer, regularCustomer.getCart());
+        orderMike.placeOrder();
+
+
+        silverCustomer.addToCart(printedBook2);
+        silverCustomer.addToCart(eBook1);
+        System.out.println("Harvey's Cart Total: $" + String.format("%.2f", silverCustomer.calculateCartTotal()));
+        Order orderHarvey = new Order(silverCustomer, silverCustomer.getCart());
+        orderHarvey.placeOrder();
+        orderHarvey.updateStatus("Shipped");
+
+
+        goldCustomer.addToCart(printedBook1);
+        goldCustomer.addToCart(eBook1);
+        goldCustomer.addToCart(printedBook2);
+        System.out.println("Donna's Cart Total: $" + String.format("%.2f", goldCustomer.calculateCartTotal()));
+        Order orderDonna = new Order(goldCustomer, goldCustomer.getCart());
+
+        orderDonna.placeOrder();
+        orderDonna.updateStatus("Delivered");
+    }
+}
+
+
